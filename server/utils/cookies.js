@@ -1,8 +1,7 @@
-import { refreshToken } from "./generateToken.js";
+
 
 export const setCookie = (res, token) => {
-  const token = refreshToken(user);
-  res.cookies("refreshToken", token, {
+  res.cookie("refreshToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "None",

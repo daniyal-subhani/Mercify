@@ -23,6 +23,8 @@ const orderItemSchema = new mongoose.Schema(
       required: true,
     },
     quantity: { type: Number, required: true, min: 1 },
+    price: { type: Number, required: true },
+    seller: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
   },
   { _id: false }
 );

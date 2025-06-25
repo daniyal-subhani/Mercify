@@ -9,11 +9,13 @@ import {
   successResponse,
 } from "../utils/responseHandler.js";
 import { formatUserResponse } from "../utils/formatData.js";
+import { authTokenMiddleware } from "../middlewares/auth.middleware.js";
+import { clearCookie, setCookie } from "../utils/cookies.js";
 
 // ✅ REGISTER CONTROLLER
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.validated;
+    const { name, email, password, role , bio} = req.validated;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -26,17 +28,13 @@ export const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      bio,
     });
 
     const accessToken = generateAccessToken(newUser);
     const refreshToken = generateRefreshToken(newUser);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setCookie(res, refreshToken);
 
     return successResponse(res, 201, "User created successfully", {
       user: formatUserResponse(newUser),
@@ -65,12 +63,7 @@ export const loginUser = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setCookie(res, refreshToken);
 
     return successResponse(res, 200, "User logged in successfully", {
       user: formatUserResponse(user),
@@ -84,11 +77,7 @@ export const loginUser = async (req, res) => {
 // ✅ LOGOUT CONTROLLER
 export const logoutUser = (req, res) => {
   try {
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
-    });
+    clearCookie(res);
 
     return successResponse(res, 200, "User logged out successfully");
   } catch (error) {
@@ -99,7 +88,19 @@ export const logoutUser = (req, res) => {
 
 export const refreshAccessToken = async (req, res)=> {
   try {
-    // Do it later
+    const refreshToken = req.cookies.refreshToken;
+    if(!refreshToken) {
+      return errorResponse(res, 403, "Refresh token not found");
+    }
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return errorResponse(res, 404, "User not found");
+    }
+    const accessToken = generateAccessToken(user);
+    return successResponse(res, 200, "Access token refreshed successfully", {
+      accessToken,
+    });
   } catch (error) {
      return errorResponse(res, 403, "Invalid or expired refresh token");
   }

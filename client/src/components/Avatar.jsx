@@ -6,10 +6,16 @@ const sizeClasses = {
   lg: "w-24 h-24",
 };
 
-const ProfilePicture = ({ src, alt = "User", size = "md", className = "" }) => {
+const ProfilePicture = ({
+  src,
+  alt = "User",
+  size = "md",
+  className = "",
+  user,
+}) => {
   const initials =
-    alt
-      ?.split(" ")
+    user?.name
+      .split(" ")
       .map((word) => word.charAt(0).toUpperCase())
       .join("")
       .slice(0, 2) || "U";

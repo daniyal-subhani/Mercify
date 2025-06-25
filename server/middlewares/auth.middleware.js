@@ -1,6 +1,6 @@
-import User from "../models/user.model";
+import User from "../models/user.model.js";
 
-export const authMiddleware = async (req, res, next) => {
+export const authTokenMiddleware = async (req, res, next) => {
   const token = req.cookies.accessToken;
   if (!token) {
     return errorResponse(res, 401, "Unauthorized");
@@ -15,9 +15,10 @@ export const authMiddleware = async (req, res, next) => {
 };
 
 
+
 export const isSeller = (req, res, next) => {
   if (!req.user || req.user.role !== "seller") {
     return errorResponse(res, 403, "Only seller can access this route");
   }
   next();
-}
+};

@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { errorResponse, successResponse } from "./responseHandler";
+import { errorResponse, successResponse } from "./responseHandler.js";
 
 export const hashPassword =async (password) => {
   try {

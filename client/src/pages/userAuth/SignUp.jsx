@@ -13,9 +13,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { RouteSignIn } from "@/helpers/routesName"; // Adjust the import if needed
+import { RouteSignIn } from "@/helpers/routesName";
+import { showToast } from "@/components/shared/showToast";
+import appUtils from "@/lib/appUtils";
+import { signUpThunk } from "@/store/thunks/authThunk";
 
 const SignUp = () => {
+  const { dispatch } = appUtils();
   const form = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -25,8 +29,67 @@ const SignUp = () => {
     },
   });
 
-  function onSubmit(values) {
-    console.log(values); // Replace with actual API call
+  async function onSubmit(formData) {
+    try {
+      const resultAction = await dispatch(signUpThunk(formData));
+
+      if (signUpThunk.fulfilled.match(resultAction)) {
+        // Success
+        showToast({
+          message: "Account created successfully",
+          type: "success",
+          actionLabel: "Profile",
+          onActionClick: () => {
+            // Navigate to profile
+          },
+        });
+      } else {
+        // Failure
+        const errorMessage =
+          resultAction.payload || "Signup failed. Please try again.";
+        showToast({
+          message: errorMessage,
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      showToast({
+        message: "Something went wrong",
+        type: "error",
+      });
+    }
+  }
+  async function onSubmit(formData) {
+    try {
+      const resultAction = await dispatch(signUpThunk(formData));
+
+      if (signUpThunk.fulfilled.match(resultAction)) {
+        // Success
+        showToast({
+          message: "Account created successfully",
+          type: "success",
+          actionLabel: "Profile",
+          onActionClick: () => {
+            // Navigate to profile
+          },
+        });
+      } else {
+        // Failure
+        const errorMessage =
+          resultAction.payload || "Signup failed. Please try again.";
+        showToast({
+          message: errorMessage,
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      showToast({
+        message: "Something went wrong",
+        type: "error",
+      });
+    }
   }
 
   function onError(error) {
@@ -50,9 +113,15 @@ const SignUp = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 dark:text-gray-200">Name</FormLabel>
+                  <FormLabel className="text-gray-700 dark:text-gray-200">
+                    Name
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Your Name" {...field} className="dark:bg-gray-900" />
+                    <Input
+                      placeholder="Your Name"
+                      {...field}
+                      className="dark:bg-gray-900"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -64,9 +133,16 @@ const SignUp = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 dark:text-gray-200">Email</FormLabel>
+                  <FormLabel className="text-gray-700 dark:text-gray-200">
+                    Email
+                  </FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} className="dark:bg-gray-900" />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      {...field}
+                      className="dark:bg-gray-900"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -78,16 +154,27 @@ const SignUp = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 dark:text-gray-200">Password</FormLabel>
+                  <FormLabel className="text-gray-700 dark:text-gray-200">
+                    Password
+                  </FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Create a password" {...field} className="dark:bg-gray-900" />
+                    <Input
+                      type="password"
+                      placeholder="Create a password"
+                      {...field}
+                      className="dark:bg-gray-900"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+            >
               {form.formState.isSubmitting ? "Creating Account..." : "Sign Up"}
             </Button>
           </form>

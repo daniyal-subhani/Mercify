@@ -18,20 +18,24 @@ export const orderItemSchema = z.object({
   quantity: z.number().min(1, "Quantity must be at least 1"),
 });
 
-export const createOrderSchema = z.object({
-  deliveryInfo: deliveryInfoSchema,
-  orderItems: z
-    .array(orderItemSchema)
-    .min(1, "At least one product is required"),
-  subtotal: z.number().min(0, "Subtotal must be a positive number"),
-  tax: z.number().min(0, "Tax must be a positive number"),
-  shipping: z.number().min(0, "Shipping must be a positive number"),
-  total: z.number().min(0, "Total must be a positive number"),
-  paymentMethod: z.enum(["cash-on-delivery", "stripe"]),
-})
-.refine((data) => data.total === ((data.subtotal + data.tax + data.shipping).toFixed(2), 
-
-{
-  message: "Total should equal subtotal + tax + shipping",
-  path: ["total"]
-}))
+export const createOrderSchema = z
+  .object({
+    deliveryInfo: deliveryInfoSchema,
+    orderItems: z
+      .array(orderItemSchema)
+      .min(1, "At least one product is required"),
+    subtotal: z.number().min(0, "Subtotal must be a positive number"),
+    tax: z.number().min(0, "Tax must be a positive number"),
+    shipping: z.number().min(0, "Shipping must be a positive number"),
+    total: z.number().min(0, "Total must be a positive number"),
+    paymentMethod: z.enum(["cash-on-delivery", "stripe"]),
+  })
+  .refine(
+    (data) =>
+      data.total ===
+      ((data.subtotal + data.tax + data.shipping).toFixed(2),
+      {
+        message: "Total should equal subtotal + tax + shipping",
+        path: ["total"],
+      })
+  );

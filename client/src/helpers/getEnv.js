@@ -8,4 +8,5 @@ export const getEnv = (key) => {
   if (!value) {
     throw new Error(`${key} is missing or not defined`);
   }
+  return value;
 };

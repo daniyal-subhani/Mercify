@@ -15,14 +15,15 @@ import {
 import { useSearch } from "@/context/SearchContext";
 import appUtils from "@/lib/appUtils";
 import ProfilePicture from "./Avatar";
+import { logout } from "@/store/slices/authSlice";
 
 const Navbar = () => {
   const { setSearchQuery, showSearchBar, setShowSearchBar } = useSearch();
   const [open, setOpen] = React.useState(false);
-  const [user, setUser] = React.useState(true); // Replace with actual auth check
   const mobileMenuRef = useRef(null);
-  const { navigate, location, selector } = appUtils();
+  const { navigate, location, selector, dispatch } = appUtils();
   const cart = selector((state) => state.cart.cartItems);
+  const {user} = selector((state) => state.auth);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -51,6 +52,16 @@ const Navbar = () => {
       setShowSearchBar(true);
     }
   };
+
+  const handleLogout = () => {
+    try {
+      dispatch(logout());
+      navigate(RouteSignIn);
+    } catch (error) {
+  console.error("Error logging out:", error);
+    }
+  }
+  
 
   return (
     <div className="bg-gray-50 w-full">
@@ -99,10 +110,10 @@ const Navbar = () => {
 
           {user ? (
             <div className="relative group ">
-              <ProfilePicture src={""} alt="User" size="sm" className="ml-2" />
+              <ProfilePicture src={""} alt="User" size="sm" className="ml-2" user={user} />
               <div className="absolute right-0 mt-2 w-40 bg-white shadow-md  hidden group-hover:block z-50 ">
                 <NavLink to="/profile" className="block px-4 py-2 text-sm hover:bg-gray-100">Your Profile</NavLink>
-                <Button className="w-full rounded-none" variant="ghost">Logout</Button>
+                <Button onClick={handleLogout} className="w-full rounded-none" variant="ghost">Logout</Button>
               </div>
             </div>
           ) : (
@@ -154,7 +165,7 @@ const Navbar = () => {
           {user ? (
             <>
               <NavLink to="/profile" className="py-2 text-lg">Your Profile</NavLink>
-              <Button variant="ghost" className="text-left w-full">Logout</Button>
+              <Button onClick={handleLogout} variant="ghost" className="text-left w-full">Logout</Button>
             </>
           ) : (
             <NavLink to={RouteSignIn} className="py-2 text-lg">
