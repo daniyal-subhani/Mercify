@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Trash2, ArrowLeft } from "lucide-react";
 
-import CartTotal from "@/components/cartTotal";
+import CartTotal from "@/components/CartTotal";
 import { updateQuantity, removeFromCart } from "@/store/slices/cartSlice";
 import { showToast } from "@/components/shared/showToast";
 import { RouteCollection } from "@/helpers/routesName";

@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CheckCircle } from "lucide-react";
 import appUtils from "@/lib/appUtils";
-import CartTotal from "@/components/cartTotal";
+import CartTotal from "@/components/CartTotal";
 import { RouteOrderConfirmation } from "@/helpers/routesName";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { deliveryFormSchema } from "@/schemas/diliveryFormSchema";
