@@ -56,7 +56,7 @@ Mercify is a production-grade, full-stack e-commerce application built entirely 
 
 | Home Page                                | Seller Panel                    | Admin View                                  |
 | ---------------------------------------- | ------------------------------- | ------------------------------------------- | -------------------------------------------- | --------------------------------------- | ----------------------------------- |
-| ![Home Page](./screenshots/homepage.png) | ![cart](./screenshots/cart.png) | ![collection](./screenshots/collection.png) | ![add product](./screenshots/addproduct.png) | ![checkout](./screenshots/checkout.png) | ![seller](./screenshots/seller.png) |
+| ![Home Page](./screenshots/homepage.png) | ![cart](./screenshots/cart.png) | ![collection](./screenshots/collection.png) | ![add product](./screenshots/addproduct.png) | ![checkout](./screenshots/checkout.png) | ![seller](./screenshots/seller.png) | ![addProduct](./screenshots/add_product.png) | ![productDetails](./screenshots/product_details.png) | ![sellerProfile](./screenshots/seller_profile.png)
 
 ---
 
