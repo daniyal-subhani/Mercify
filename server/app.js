@@ -25,6 +25,10 @@ app.use(cors({
 
 }));
 //  Routes
+app.get("/ping", (req, res) => {
+  res.status(200).json({ message: "pong" });
+});
+
 app.use(ROUTES.AUTH.BASE, authRoutes);
 app.use(ROUTES.USER.BASE, userRoutes);
 app.use(ROUTES.SELLER.BASE, sellerRoutes);
