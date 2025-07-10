@@ -1,7 +1,10 @@
-import { products } from "@/assets/frontend_assets/assets";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useSelector } from "react-redux";
 
 const FilterSidebar = ({ filters, onFilterChange }) => {
+  const productsState = useSelector((state) => state.products);
+  const products = productsState?.products || [];
+
   const categories = [...new Set(products.map((product) => product.category))];
   const subCategories = [...new Set(products.map((product) => product.subCategory))];
 
@@ -16,7 +19,7 @@ const FilterSidebar = ({ filters, onFilterChange }) => {
         <div key={opt} className="flex items-center gap-2 py-1">
           <Checkbox
             id={`${section}-${opt}`}
-            checked={filters[section].includes(opt)}
+            checked={filters[section]?.includes(opt)}
             onCheckedChange={() => handleChange(section, opt)}
           />
           <label htmlFor={`${section}-${opt}`} className="text-sm">
@@ -30,8 +33,7 @@ const FilterSidebar = ({ filters, onFilterChange }) => {
   return (
     <div className="p-4 border rounded-lg bg-white shadow w-[90%] md:w-[250px]">
       {renderOptions("Category", "category", categories)}
-      {renderOptions("Type", "subCategory", subCategories)
-}
+      {renderOptions("Type", "subCategory", subCategories)}
     </div>
   );
 };

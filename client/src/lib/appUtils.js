@@ -14,4 +14,4 @@ const appUtils = () => {
     location
   }
 }
-export default appUtils
+export default appUtils;

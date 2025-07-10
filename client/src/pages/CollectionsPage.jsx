@@ -2,56 +2,56 @@ import { useState, useEffect } from "react";
 import FilterSidebar from "@/components/FilterSidebar";
 import SortDropdown from "@/components/SortDropdown";
 import ProductCard from "@/components/ProductCard";
-import { products as dummyProducts } from "@/assets/frontend_assets/assets";
 import NoProductMatch from "@/components/NoProductMatch";
 import { useSearch } from "@/context/SearchContext";
+import appUtils from "@/lib/appUtils";
+import { getAllProductsThunk } from "@/store/thunks/productThunk";
 
 const CollectionPage = () => {
-  const { searchQuery  } = useSearch();
+  const { searchQuery } = useSearch();
   const [filters, setFilters] = useState({ category: [], subCategory: [] });
   const [sortOption, setSortOption] = useState("relevance");
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false); // Toggle for mobile
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  const { selector, dispatch } = appUtils();
+  const { products, loading, error } = selector((state) => state.products);
 
-  // Initial product load
+  // Load products once on mount
   useEffect(() => {
-    const loadProducts = () => {
-      const products = dummyProducts;
-      setAllProducts(products);
-      setFilteredProducts(products);
-    };
-    loadProducts();
-  }, []);
+    dispatch(getAllProductsThunk());
+  }, [dispatch]);
 
-  // Filtering + Sorting logic
+  // Filter and sort products based on UI state
   useEffect(() => {
-    let products = [...allProducts];
+    let filtered = [...products];
 
-    // Apply category/subcategory filters
-    if (filters.category.length)
-      products = products.filter((p) => filters.category.includes(p.category));
-    if (filters.subCategory.length)
-      products = products.filter((p) =>
-        filters.subCategory.includes(p.subCategory)
-      );
-
-       // 🟡 Live search filtering
-       if(searchQuery.trim()) {
-        products = products.filter((p) => 
-          p.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-       }
-//  Sorting
-    if (sortOption === "lowToHigh") {
-      products.sort((a, b) => a.price - b.price);
-    } else if (sortOption === "highToLow") {
-      products.sort((a, b) => b.price - a.price);
+    if (filters.category.length > 0) {
+      filtered = filtered.filter((p) => filters.category.includes(p.category));
     }
 
-    setFilteredProducts(products);
-  }, [filters, sortOption, allProducts, searchQuery]);
+    if (filters.subCategory.length > 0) {
+      filtered = filtered.filter((p) =>
+        filters.subCategory.includes(p.subCategory)
+      );
+    }
+
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((p) =>
+        p.productName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (sortOption === "lowToHigh") {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortOption === "highToLow") {
+      filtered.sort((a, b) => b.price - a.price);
+    } else {
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    setFilteredProducts(filtered);
+  }, [products, filters, sortOption, searchQuery]);
 
   // Checkbox toggle handler
   const handleFilterChange = (section, value) => {
@@ -63,10 +63,13 @@ const CollectionPage = () => {
     });
   };
 
-  // Auto-close filter on outside click (only when open)
+  // Close filter on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest(".mobile-filter-toggle") && !e.target.closest(".mobile-filter-panel")) {
+      if (
+        !e.target.closest(".mobile-filter-toggle") &&
+        !e.target.closest(".mobile-filter-panel")
+      ) {
         setIsFilterOpen(false);
       }
     };
@@ -95,27 +98,37 @@ const CollectionPage = () => {
           <h3 className="text-base font-semibold">Filters</h3>
           <span className="text-xl">{isFilterOpen ? "▲" : "▼"}</span>
         </div>
-
         {isFilterOpen && (
           <div className="mobile-filter-panel mt-3">
-            <FilterSidebar filters={filters} onFilterChange={handleFilterChange} />
+            <FilterSidebar
+              filters={filters}
+              onFilterChange={handleFilterChange}
+            />
           </div>
         )}
       </div>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Desktop Sidebar */}
+        {/* Sidebar */}
         <div className="hidden md:block md:col-span-1">
-          <FilterSidebar filters={filters} onFilterChange={handleFilterChange} />
+          <FilterSidebar
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
         </div>
 
         {/* Product Grid */}
         <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredProducts.length === 0 && <NoProductMatch />}
-          {filteredProducts.map((p) => (
-            <ProductCard key={p._id} product={p} />
-          ))}
+          {loading ? (
+            <p className="col-span-full text-center">Loading products...</p>
+          ) : filteredProducts.length === 0 ? (
+            <NoProductMatch />
+          ) : (
+            filteredProducts.map((p) => (
+              <ProductCard key={p._id} product={p} />
+            ))
+          )}
         </div>
       </div>
     </div>

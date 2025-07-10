@@ -10,7 +10,7 @@ const productSchema = new Schema(
     },
     seller: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Seller",
       required: true,
     },
     description: {
@@ -21,37 +21,36 @@ const productSchema = new Schema(
       type: Number,
       required: true,
     },
-    category: {
-      type: String,
+    offerPrice: {
+      type: Number,
       required: true,
     },
     stock: {
       type: Number,
       required: true,
     },
-    sold: {
-      type: Number,
-      default: 0,
-    },
     images: [
       {
         type: String,
       },
     ],
-    color: {
-      type: String,
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
       required: true,
     },
-    brand: {
-      type: String,
+    subCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubCategory",
       required: true,
     },
-    ratings: [
+    sizes: [
       {
-        star: Number,
-        postedBy: { type: Schema.Types.ObjectId, ref: "User" },
+       type: mongoose.Schema.Types.ObjectId,
+        ref: "Size",
+
       },
-    ],
+    ]
   },
   { timestamps: true }
 );

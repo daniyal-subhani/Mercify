@@ -1,5 +1,5 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { matchPath } from "react-router-dom";
 import { appRoutes } from "@/routes/routes";
 import Navbar from "./components/Navbar";
@@ -8,8 +8,14 @@ import appUtils from "./lib/appUtils";
 import { SellerRoutes } from "./routes/seller.routes";
 import { Toaster } from "./components/ui/sonner";
 
+
+
 const App = () => {
   const { location } = appUtils();
+
+   
+ 
+
 
   const hideLayoutRoutes = ["/signin", "/signup", "/become-seller"];
   const is404 =
@@ -40,7 +46,7 @@ const App = () => {
           {renderRoutes(appRoutes)}
           {renderRoutes(SellerRoutes)}
         </Routes>
-        <Toaster  position="top-center" />
+        <Toaster position="top-center" />
       </div>
       {!shouldHideLayout && <Footer />}
     </div>

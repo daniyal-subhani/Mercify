@@ -1,3 +1,5 @@
+import { addProduct } from "@/api/productApi";
+import { showToast } from "@/components/shared/showToast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,16 +11,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import appUtils from "@/lib/appUtils";
+import {
+  categoriesThunk,
+  sizeThunk,
+  subCategoriesThunk,
+} from "@/store/thunks/productMetaThunk";
 import { ImagePlus } from "lucide-react";
-import { useState } from "react";
-
-const categories = ["Men", "Women", "Kids"];
-const subCategories = ["TopWear", "BottomWear", "WinterWear"];
-const sizes = ["S", "M", "L", "XL", "XXL"];
+import { useEffect, useState } from "react";
 
 export const AddProduct = () => {
   const [preview, setPreview] = useState([]);
-  const [selectedSize, setSelectedSize] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { dispatch, selector } = appUtils();
+
+  const [formData, setFormData] = useState({
+    productName: "",
+    productDescription: "",
+    price: "",
+    offerPrice: "",
+    category: "",
+    subCategory: "",
+    stock: "",
+    sizes: [],
+  });
+
+  useEffect(() => {
+    dispatch(categoriesThunk());
+    dispatch(subCategoriesThunk());
+    dispatch(sizeThunk());
+  }, [dispatch]);
+
+  const { categories, subCategories, sizes } = selector(
+    (state) => state.productMetaData
+  );
 
   const handleFileChange = (index, file) => {
     const previewUrl = URL.createObjectURL(file);
@@ -26,15 +52,67 @@ export const AddProduct = () => {
     updatedImages[index] = { preview: previewUrl, file };
     setPreview(updatedImages);
   };
-  const toggleSize = (size) => {
-    setSelectedSize((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
-    );
+
+  const toggleSize = (sizeId) => {
+    setFormData((prev) => ({
+      ...prev,
+      sizes: prev.sizes.includes(sizeId)
+        ? prev.sizes.filter((id) => id !== sizeId)
+        : [...prev.sizes, sizeId],
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const formDataToSend = new FormData();
+    preview.forEach((image) => {
+      if (image?.file) {
+        formDataToSend.append("productImages", image.file);
+      }
+    });
+
+    formDataToSend.append("productName", formData.productName);
+    formDataToSend.append("productDescription", formData.productDescription);
+    formDataToSend.append("price", formData.price);
+    formDataToSend.append("offerPrice", formData.offerPrice);
+    formDataToSend.append("category", formData.category);
+    formDataToSend.append("subCategory", formData.subCategory);
+    formDataToSend.append("stock", formData.stock);
+
+    formData.sizes.forEach((sizeId) => {
+      formDataToSend.append("sizes", sizeId);
+    });
+
+    try {
+      const result = await addProduct(formDataToSend);
+      showToast({
+        message: "Product added successfully",
+        type: "success",
+        actionLabel: "View Product",
+        onAction: () => {
+          // Optionally navigate to product page
+        },
+      });
+      // Optional: Reset form or preview
+    } catch (error) {
+      console.error("❌ Error:", error.message);
+      showToast({
+        message: "Failed to add product",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="py-10 flex justify-center ">
-      <form className="w-full max-w-xl space-y-6 bg-white rounded-xl shadow-md p-6">
+    <div className="py-10 flex justify-center">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-xl space-y-6 bg-white rounded-xl shadow-md p-6"
+      >
         {/* Image Upload */}
         <div className="space-y-2">
           <Label className="text-base font-semibold">Product Images</Label>
@@ -54,7 +132,6 @@ export const AddProduct = () => {
                     accept="image/*"
                     onChange={(e) => handleFileChange(index, e.target.files[0])}
                   />
-
                   {preview[index]?.preview ? (
                     <img
                       src={preview[index].preview}
@@ -72,7 +149,15 @@ export const AddProduct = () => {
         {/* Product Name */}
         <div className="space-y-1">
           <Label htmlFor="product-name">Product Name</Label>
-          <Input id="product-name" placeholder="Type product name" required />
+          <Input
+            id="product-name"
+            placeholder="Type product name"
+            required
+            value={formData.productName}
+            onChange={(e) =>
+              setFormData({ ...formData, productName: e.target.value })
+            }
+          />
         </div>
 
         {/* Description */}
@@ -82,64 +167,88 @@ export const AddProduct = () => {
             id="product-description"
             placeholder="Type detailed description"
             rows={4}
+            value={formData.productDescription}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                productDescription: e.target.value,
+              })
+            }
           />
         </div>
 
-        {/* Category */}
+        {/* Category, Subcategory, Stock */}
         <section className="flex gap-12">
           <div className="space-y-1">
             <Label htmlFor="category">Category</Label>
-            <Select>
+            <Select
+              onValueChange={(value) =>
+                setFormData({ ...formData, category: value })
+              }
+            >
               <SelectTrigger id="category">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                {categories?.map((category) => (
+                  <SelectItem key={category._id} value={category._id}>
+                    {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="category">subCategory</Label>
-            <Select>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Select category" />
+            <Label htmlFor="subCategory">Subcategory</Label>
+            <Select
+              onValueChange={(value) =>
+                setFormData({ ...formData, subCategory: value })
+              }
+            >
+              <SelectTrigger id="subCategory">
+                <SelectValue placeholder="Select subcategory" />
               </SelectTrigger>
               <SelectContent>
-                {subCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                {subCategories?.map((sub) => (
+                  <SelectItem key={sub._id} value={sub._id}>
+                    {sub.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-       {/* Stock */}
-       <div className="space-y-1">
-        <Label htmlFor="stock">Stock</Label>
-        <Input id="stock" type="number" placeholder="Enter stock" />
-       </div>
+          <div className="space-y-1">
+            <Label htmlFor="stock">Stock</Label>
+            <Input
+              id="stock"
+              type="number"
+              placeholder="Enter stock"
+              required
+              value={formData.stock}
+              onChange={(e) =>
+                setFormData({ ...formData, stock: e.target.value })
+              }
+            />
+          </div>
         </section>
+
         {/* Sizes */}
         <div className="space-y-1">
           <Label>Available Sizes</Label>
           <div className="flex gap-2 flex-wrap">
-            {sizes.map((size) => (
+            {sizes?.map((size) => (
               <Button
-                key={size}
+                key={size._id}
                 type="button"
                 variant="outline"
-                onClick={() => toggleSize(size)}
+                onClick={() => toggleSize(size._id)}
                 className={`px-4 py-2 ${
-                  selectedSize.includes(size)
+                  formData.sizes.includes(size._id)
                     ? "bg-indigo-500 text-white border-indigo-500"
                     : ""
                 }`}
               >
-                {size}
+                {size.label}
               </Button>
             ))}
           </div>
@@ -149,18 +258,36 @@ export const AddProduct = () => {
         <div className="flex gap-4 flex-wrap">
           <div className="flex-1 space-y-1 min-w-[120px]">
             <Label htmlFor="product-price">Product Price</Label>
-            <Input id="product-price" type="number" placeholder="0" required />
+            <Input
+              id="product-price"
+              type="number"
+              placeholder="0"
+              required
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
+              }
+            />
           </div>
           <div className="flex-1 space-y-1 min-w-[120px]">
             <Label htmlFor="offer-price">Offer Price</Label>
-            <Input id="offer-price" type="number" placeholder="0" required />
+            <Input
+              id="offer-price"
+              type="number"
+              placeholder="0"
+              required
+              value={formData.offerPrice}
+              onChange={(e) =>
+                setFormData({ ...formData, offerPrice: e.target.value })
+              }
+            />
           </div>
         </div>
 
         {/* Submit */}
         <div>
-          <Button type="submit" className="w-full">
-            Add Product
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Adding..." : "Add Product"}
           </Button>
         </div>
       </form>

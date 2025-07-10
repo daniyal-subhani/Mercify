@@ -1,4 +1,4 @@
-// sellerRoutes.js
+
 export const RouteBaseSellerURL = "/seller"; // base route
 
 // children routes (relative to RouteBaseSellerURL)

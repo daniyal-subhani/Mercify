@@ -11,9 +11,22 @@ import CartTotal from "@/components/cartTotal";
 import { RouteOrderConfirmation } from "@/helpers/routesName";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { deliveryFormSchema } from "@/schemas/diliveryFormSchema";
+import { axiosInstance } from "@/lib/axiosInstance";
+import { backendRoutes } from "@/helpers/backendRoutes";
+import { useSelector, useDispatch } from "react-redux";
+import { calculateCartTotals } from "@/lib/cartUtils";
+import { clearCart } from "@/store/slices/cartSlice";
 
 const CheckoutPage = () => {
   const { navigate } = appUtils();
+  const dispatch = useDispatch();
+
+  // Get cart items from Redux
+  const cartItems = useSelector((state) => state.cart.cartItems);
+  const safeCart = Array.isArray(cartItems) ? cartItems : [];
+
+  // Calculate total from cart items
+  const { total } = calculateCartTotals(safeCart);
 
   const {
     register,
@@ -34,13 +47,35 @@ const CheckoutPage = () => {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log("Form submitted:", data);
-    navigate(RouteOrderConfirmation);
+  const onSubmit = async (data) => {
+    const deliveryInfo = { ...data };
+
+    const payload = {
+      deliveryInfo,
+      cartTotal: total,
+      cartItems: safeCart.map((item) => ({
+        productId: item._id,
+        quantity: item.quantity,
+      })),
+      paymentMethod: "COD",
+    };
+
+    try {
+      const res = await axiosInstance.post(
+        `${backendRoutes.ORDER.BASE}${backendRoutes.ORDER.CREATE_ORDER}`,
+        payload,
+        { withCredentials: true }
+      );
+
+      dispatch(clearCart());
+ navigate(`/order-confirmation/${res.data.order._id}`);
+
+    } catch (error) {
+      console.error("Order creation failed:", error);
+    }
   };
 
   const onError = (errors) => {
-    console.log("Validation errors:", errors);
   };
 
   return (
@@ -61,7 +96,9 @@ const CheckoutPage = () => {
               className="h-14 text-lg px-4"
             />
             {errors.firstName && (
-              <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.firstName.message}
+              </p>
             )}
           </div>
           <div>
@@ -71,7 +108,9 @@ const CheckoutPage = () => {
               className="h-14 text-lg px-4"
             />
             {errors.lastName && (
-              <p className="text-red-500 text-sm mt-1">{errors.lastName.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.lastName.message}
+              </p>
             )}
           </div>
         </div>
@@ -117,7 +156,9 @@ const CheckoutPage = () => {
               className="h-14 text-lg px-4"
             />
             {errors.state && (
-              <p className="text-red-500 text-sm mt-1">{errors.state.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.state.message}
+              </p>
             )}
           </div>
         </div>
@@ -130,7 +171,9 @@ const CheckoutPage = () => {
               className="h-14 text-lg px-4"
             />
             {errors.zipCode && (
-              <p className="text-red-500 text-sm mt-1">{errors.zipCode.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.zipCode.message}
+              </p>
             )}
           </div>
           <div>
@@ -140,7 +183,9 @@ const CheckoutPage = () => {
               className="h-14 text-lg px-4"
             />
             {errors.country && (
-              <p className="text-red-500 text-sm mt-1">{errors.country.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.country.message}
+              </p>
             )}
           </div>
         </div>

@@ -13,13 +13,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { RouteSignIn } from "@/helpers/routesName";
+import { RouteIndex, RouteSignIn } from "@/helpers/routesName";
 import { showToast } from "@/components/shared/showToast";
 import appUtils from "@/lib/appUtils";
 import { signUpThunk } from "@/store/thunks/authThunk";
 
 const SignUp = () => {
-  const { dispatch } = appUtils();
+  const { dispatch, navigate } = appUtils();
   const form = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -29,68 +29,37 @@ const SignUp = () => {
     },
   });
 
-  async function onSubmit(formData) {
-    try {
-      const resultAction = await dispatch(signUpThunk(formData));
+   async function onSubmit(formData) {
+  try {
+    const resultAction = await dispatch(signUpThunk(formData));
 
-      if (signUpThunk.fulfilled.match(resultAction)) {
-        // Success
-        showToast({
-          message: "Account created successfully",
-          type: "success",
-          actionLabel: "Profile",
-          onActionClick: () => {
-            // Navigate to profile
-          },
-        });
-      } else {
-        // Failure
-        const errorMessage =
-          resultAction.payload || "Signup failed. Please try again.";
-        showToast({
-          message: errorMessage,
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error(error);
+    if (signUpThunk.fulfilled.match(resultAction)) {
+      navigate(RouteIndex);
       showToast({
-        message: "Something went wrong",
+        message: "Account created successfully",
+        type: "success",
+        actionLabel: "Profile",
+        onActionClick: () => {
+          // Navigate to profile
+        },
+      });
+    } else {
+      const errorMessage =
+        resultAction.payload || "Signup failed. Please try again.";
+      showToast({
+        message: errorMessage,
         type: "error",
       });
     }
+  } catch (error) {
+    console.error(error);
+    showToast({
+      message: "Something went wrong",
+      type: "error",
+    });
   }
-  async function onSubmit(formData) {
-    try {
-      const resultAction = await dispatch(signUpThunk(formData));
+}
 
-      if (signUpThunk.fulfilled.match(resultAction)) {
-        // Success
-        showToast({
-          message: "Account created successfully",
-          type: "success",
-          actionLabel: "Profile",
-          onActionClick: () => {
-            // Navigate to profile
-          },
-        });
-      } else {
-        // Failure
-        const errorMessage =
-          resultAction.payload || "Signup failed. Please try again.";
-        showToast({
-          message: errorMessage,
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      showToast({
-        message: "Something went wrong",
-        type: "error",
-      });
-    }
-  }
 
   function onError(error) {
     console.error(error);

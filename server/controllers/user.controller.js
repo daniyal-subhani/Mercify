@@ -1,24 +1,29 @@
 import User from "../models/user.model.js";
 import { uploadToCloudinary } from "../utils/cloudinary_upload_helper.js";
+import { formatUserResponse } from "../utils/formatData.js";
 import { errorResponse, successResponse } from "../utils/responseHandler.js";
 
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const user = await User.findById(userId).select("name email avatar bio");
+    const user = await User.findById(userId).select(
+      "name email avatar bio createdAt updatedAt"
+    );
     if (!user) {
-      return errorResponse(res, "User not found", 404);
+      return errorResponse(res, 404, "User not found");
     }
-    return successResponse(res, 200, "User profile fetched successfully", user);
+    return successResponse(res, 200, "User profile fetched successfully", {
+      user: formatUserResponse(user),
+    });
   } catch (error) {
-    return errorResponse(res, 500, error.message);
+    return errorResponse(res, 500, "Something went wrong", error.message);
   }
 };
 
 export const updatedUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { name, email,  bio } = req.validated;
+    const { name, email, bio } = req.validated;
     let avatarUrl;
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer, "users");

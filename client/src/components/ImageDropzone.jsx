@@ -1,4 +1,4 @@
-// components/ImageDropzone.jsx
+
 import { useDropzone } from 'react-dropzone';
 import { useRef, useEffect } from 'react';
 

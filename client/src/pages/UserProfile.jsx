@@ -7,17 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import ProfilePicture from "@/components/Avatar";
 import { Camera, Pencil } from "lucide-react";
+import { getUserProfile } from "@/api/userApi";
+import { useDispatch } from "react-redux";
+import { getUserThunk } from "@/store/thunks/userDashboardThunk";
 
-const mockUser = {
-  name: "John Doe",
-  email: "johndoe@example.com",
-  bio: "Passionate shopper and sneakerhead.",
-};
-
-const UserProfile = () => {
+const UserProfile = ({ userId }) => {
   const [preview, setPreview] = useState(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const { register, handleSubmit, setValue } = useForm();
+  const dispatch = useDispatch();
+  const { register, handleSubmit } = useForm();
   const fileInputRef = useRef();
 
   const [editMode, setEditMode] = useState({
@@ -47,12 +46,20 @@ const UserProfile = () => {
     // await axios.post('/upload', formData);
   };
 
-
   useEffect(() => {
-    setValue("name", mockUser.name);
-    setValue("email", mockUser.email);
-    setValue("bio", mockUser.bio);
-  }, [setValue]);
+    const fetchUserFromDB = async () => {
+      const userId = user.id;
+      try {
+        const userData = await dispatch(getUserThunk(userId));
+        setUser(userData.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    if (userId) fetchUserFromDB();
+  }, [userId]);
+
+  if (!user) return <p className="text-center py-10">Loading user...</p>;
 
   const enableEdit = (field) => {
     setEditMode((prev) => ({ ...prev, [field]: true }));
@@ -65,7 +72,6 @@ const UserProfile = () => {
   };
 
   const onSubmit = (data) => {
-    console.log("Updated profile:", data);
     setEditMode({ name: false, email: false, bio: false });
     navigate("/");
   };
@@ -80,7 +86,10 @@ const UserProfile = () => {
             {/* Profile Picture */}
             <div className="relative group w-32 h-32 mx-auto">
               {/* Avatar component */}
-              <div className="relative group w-fit mx-auto cursor-pointer" onClick={handleAvatarClick}>
+              <div
+                className="relative group w-fit mx-auto cursor-pointer"
+                onClick={handleAvatarClick}
+              >
                 <ProfilePicture
                   src={preview || "/default-avatar.jpg"}
                   size="lg"

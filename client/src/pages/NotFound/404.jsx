@@ -1,4 +1,3 @@
-// components/NotFoundPage.tsx
 
 import { Button } from "@/components/ui/button";
 import { RouteIndex } from "@/helpers/routesName";

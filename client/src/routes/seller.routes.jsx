@@ -7,7 +7,7 @@ import {
   RouteSellerProfile,
 } from "@/helpers/sellerRoutesName";
 import { AddProduct } from "@/pages/seller/AddProduct";
-import AllProducts from "@/pages/seller/AllProducts";
+import AllProducts from "@/pages/seller/SellerProducts";
 import Dashboard from "@/pages/seller/Dashboard";
 import Orders from "@/pages/seller/Orders";
 import SellerLayout from "@/pages/seller/SellerLayout";

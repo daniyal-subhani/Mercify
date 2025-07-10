@@ -95,14 +95,11 @@ Mercify/
 
 ## 🎯 What's Next
 
-- Replace dummy product data with actual DB products
-- Replace Mongo Compass with MongoDB Atlas
-- Implement order history and tracking
-- connect Api's
 - connect to Stripe for payment processing
 - Build Admin Dashboard , analytics, and insights
 - Add analytics/graphs in admin dashboard
 - Final testing & optimization
+- Add more features and improvements
 
 ---
 
@@ -118,3 +115,4 @@ If you're a recruiter or developer interested in this project, feel free to conn
 
 - GitHub: [Daniyal - Subhani](https://github.com/daniyal-subhani)
 - Email: daniyalsubhani527@gmail.com
+- LinkedIn: [Daniyal Subhani](https://www.linkedin.com/in/daniyal-subhani/)

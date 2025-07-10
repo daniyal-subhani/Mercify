@@ -1,4 +1,4 @@
-import { toast } from "sonner"; // or "@/components/ui/sonner"
+import { toast } from "sonner"; 
 
 export const showToast = ({
   message = "Something happened!",

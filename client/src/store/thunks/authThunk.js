@@ -10,9 +10,8 @@ export const signUpThunk = createAsyncThunk(
         `${backendRoutes.AUTH.BASE}${backendRoutes.AUTH.SIGNUP}`,
         formData
       );
-      console.log(response.data);
-      const {data} =  response.data;
-      
+      const { data } = response.data;
+
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -22,37 +21,36 @@ export const signUpThunk = createAsyncThunk(
   }
 );
 
-
 export const signInThunk = createAsyncThunk(
-  "auth/signIn", async (formData, thunkAPI) => {
+  "auth/signIn",
+  async (formData, thunkAPI) => {
     try {
       const response = await axiosInstance.post(
         `${backendRoutes.AUTH.BASE}${backendRoutes.AUTH.LOGIN}`,
         formData
-      )
-      console.log(response.data);
-      const {data} =  response.data;
+      );
+      const { data } = response.data;
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response.data.message || "SignIp failed"
-      )
+        error?.response?.data?.message || "Login failed"
+      );
     }
   }
-)
-
+);
 
 export const logoutThunk = createAsyncThunk(
-  "auth/logout", async (_, thunkAPI) => {
+  "auth/logout",
+  async (_, thunkAPI) => {
     try {
       const response = await axiosInstance.post(
         `${backendRoutes.AUTH.BASE}${backendRoutes.AUTH.LOGOUT}`
-      )
+      );
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response.data.message || "Logout failed"
-      )
+      );
     }
   }
-)
+);

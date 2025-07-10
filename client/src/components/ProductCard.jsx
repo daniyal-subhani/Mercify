@@ -13,84 +13,104 @@ import { RouteCart, RouteCollection } from "@/helpers/routesName";
 import { addToCart } from "@/store/slices/cartSlice";
 import { showToast } from "./shared/showToast";
 
-
-const ProductCard = ({ product, onAddToCart }) => {
-  const { navigate , dispatch} = appUtils();
+const ProductCard = ({ product }) => {
+  const { navigate, dispatch } = appUtils();
 
   const handleAddToCart = () => {
     dispatch(addToCart(product));
     showToast({
       message: "Product added to cart!",
-      description: `${product.name} has been added to your cart.`,
+      description: `${product.productName} has been added to your cart.`,
       type: "success",
       actionLabel: "View Cart",
       onActionClick: () => navigate(RouteCart),
-    })
-
+    });
   };
 
   const handleNavigate = () => {
     navigate(`${RouteCollection}/${product.category}/${product._id}`);
-
-
   };
+
+  const displayPrice = product.offerPrice || product.price;
+  const originalPrice = product.offerPrice ? product.price : null;
+  const sellerName = product.seller?.shopName || "Unknown Seller";
+  const image = product.images?.[0];
 
   return (
     <Card className="h-full flex flex-col hover:shadow-xl transition-shadow">
       <CardContent className="p-2">
-        {/* Clickable Image */}
+        {/* Image */}
         <AspectRatio
           ratio={3 / 4}
           className="bg-muted rounded-md overflow-hidden group cursor-pointer"
           onClick={handleNavigate}
         >
           <img
-            src={product.image[0]}
-            alt={product.name}
+            src={image}
+            alt={product.productName}
             className="object-cover w-full h-full transition-transform duration-200 ease-in-out group-hover:scale-110"
           />
         </AspectRatio>
 
+        {/* Content */}
         <div className="mt-2 space-y-1">
-          {/* Clickable Name */}
+          {/* Product Name */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <p
-                  className="text-sm font-medium line-clamp-1 cursor-pointer"
+                  className="text-base font-semibold line-clamp-1 cursor-pointer"
                   onClick={handleNavigate}
                 >
-                  {product.name}
+                  {product.productName}
                 </p>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{product.name}</p>
+                <p>{product.productName}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
-          {product.badge && <Badge variant="secondary">{product.badge}</Badge>}
+          {/* Description */}
+          <p className="text-sm text-muted-foreground line-clamp-1">
+            {product.description}
+          </p>
 
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <span>${product.price}</span>
-            {product.oldPrice && (
-              <span className="line-through text-muted-foreground text-xs">
-                ${product.oldPrice}
+          {/* Seller */}
+          <p   onClick={() => navigate(`/seller/${product.seller?._id || product.seller}`)} className="text-sm text-muted-foreground italic font-semibold cursor-pointer hover:underline">
+            Seller: {sellerName}
+          </p>
+
+          {/* Pricing */}
+          <div className="flex items-center gap-2 text-base font-semibold">
+            <span>${displayPrice}</span>
+            {originalPrice && (
+              <span className="line-through text-muted-foreground text-sm">
+                ${originalPrice}
               </span>
             )}
           </div>
+
+          {/* Badge */}
+          {product.badge && (
+            <Badge variant="secondary">{product.badge}</Badge>
+          )}
         </div>
       </CardContent>
 
-      <CardFooter className="mt-auto flex justify-between items-center px-2 pb-2">
-        <span className="text-sm">⭐ {product.rating || "N/A"}</span>
-        <Button onClick={handleAddToCart} size="sm" className="hover:bg-black">
+      {/* Footer */}
+      <CardFooter className="mt-auto flex justify-between items-center px-2 pb-2 gap-4">
+        <span className="text-base">⭐ {product.rating || "N/A"}</span>
+        <Button
+          onClick={handleAddToCart}
+          size="sm"
+          className="hover:bg-black cursor-pointer"
+        >
           Add to Cart
         </Button>
       </CardFooter>
     </Card>
   );
 };
-
 
 export default ProductCard;

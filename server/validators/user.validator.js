@@ -27,3 +27,9 @@ export const updateUserSchema = z.object({
   avatar,
 });
 
+
+export const updateUserProfileSchema = z.object({
+  name: name.optional(),
+  email: email.optional(),
+  bio: bio.optional(),
+});

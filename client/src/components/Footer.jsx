@@ -1,4 +1,3 @@
-// components/Footer.jsx
 
 import {
   Mail,

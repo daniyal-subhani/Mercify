@@ -27,15 +27,15 @@ const ContactUs = () => {
               <div className="space-y-2 text-gray-700">
                 <p className="flex items-center gap-2">
                   <MapPinIcon className="w-5 h-5 text-indigo-600" />
-                  54709 Willms Station, Suite 350, Washington, USA
+                  54709 Lahore, Punjab, Pakistan
                 </p>
                 <p className="flex items-center gap-2">
                   <PhoneIcon className="w-5 h-5 text-indigo-600" />
-                  (415) 555-0132
+                  (+92) 342 6435289
                 </p>
                 <p className="flex items-center gap-2">
                   <MailIcon className="w-5 h-5 text-indigo-600" />
-                  admin@forever.com
+                  daniyalsubhani527@gmail.com
                 </p>
               </div>
             </CardContent>

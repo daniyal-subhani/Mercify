@@ -5,9 +5,12 @@ export const validateSchema = (schema) => (req, res, next) => {
     const parsed = schema.parse(req.body);
     req.validated = {
       ...parsed,
-      role: req.user?.role,
-      userId: req.user?._id,
     };
+    if(req.user) {
+      req.validated.role = req.user.role;
+      req.validated.userId = req.user._id
+
+    }
     next();
   } catch (error) {
     const message = error?.errors?.[0]?.message || "Invalid request";

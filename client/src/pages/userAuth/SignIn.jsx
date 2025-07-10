@@ -13,9 +13,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { RouteSignUp } from "@/helpers/routesName"; // Adjust based on your actual path
+import { RouteIndex, RouteSignUp } from "@/helpers/routesName"; 
+import appUtils from "@/lib/appUtils";
+import { signInThunk } from "@/store/thunks/authThunk";
+import { showToast } from "@/components/shared/showToast";
 
 const SignIn = () => {
+  const { dispatch, navigate } = appUtils();
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -24,8 +28,33 @@ const SignIn = () => {
     },
   });
 
-  function onSubmit(values) {
-    console.log(values); // Replace with actual API call
+  async function onSubmit(formData) {
+    try {
+      const result =await dispatch(signInThunk(formData));
+      if (result.type === signInThunk.fulfilled.type) {
+        navigate(RouteIndex);
+        showToast({
+          message: "User Logged in successfully",
+          type: "success",
+          actionLabel: "Profile",
+          onActionClick: () => {
+            //  profile route...
+          },
+        });
+      } else {
+        const errorMessage = result.payload.message || "Invalid Credentials";
+        showToast({
+          message: errorMessage,
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      showToast({
+        message: "Something went wrong",
+        type: "error",
+      });
+    }
   }
 
   function onError(error) {

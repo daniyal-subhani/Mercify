@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { products } from "@/assets/frontend_assets/assets";
-import appUtils from "@/lib/appUtils";
 import ProductCard from "@/components/ProductCard";
+import { axiosInstance } from "@/lib/axiosInstance";
+import { backendRoutes } from "@/helpers/backendRoutes";
+import { addToCart } from "@/store/slices/cartSlice";
+import { showToast } from "@/components/shared/showToast";
 
 const ProductDetails = () => {
   const { category, id } = useParams();
-  const { navigate } = appUtils();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const sizeOptions = useSelector(
+    (state) => state.productMetaData?.sizes || []
+  );
+  const user = useSelector((state) => state.auth?.user);
+
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -17,16 +27,20 @@ const ProductDetails = () => {
   const [activeTab, setActiveTab] = useState("description");
 
   useEffect(() => {
-    const prod = products.find((p) => p.category === category && p._id === id);
-    if (prod) {
-      setProduct(prod);
-      setRelated(
-        products
-          .filter((p) => p.category === category && p._id !== id)
-          .slice(0, 5)
-      );
-    }
-  }, [category, id]);
+    const fetchProduct = async () => {
+      try {
+        const res = await axiosInstance.get(
+          `${backendRoutes.PRODUCT.BASE}${backendRoutes.PRODUCT.GET_PRODUCT}/${id}`
+        );
+        setProduct(res.data.data.product);
+        setRelated(res.data.data.relatedProducts);
+      } catch (error) {
+        console.error(error?.response?.data?.message || "Something went wrong");
+      }
+    };
+
+    if (id) fetchProduct();
+  }, [id]);
 
   if (!product) {
     return (
@@ -37,30 +51,52 @@ const ProductDetails = () => {
   }
 
   const {
-    image,
-    name,
-    description,
+    images,
+    productName,
+    productDescription,
     price,
     offerPrice,
+    subCategory,
     sizes = [],
     rating = 0,
     reviews = [],
   } = product;
+
   const displayPrice = offerPrice || price;
 
   const handleAddToCart = () => {
     if (sizes.length && !selectedSize) return;
-    // Add to cart logic
+
+    if (!user?._id) {
+      return showToast({
+        message: "You need to login",
+        description: "Please login to add items to cart",
+        type: "error",
+      });
+    }
+
+    dispatch(
+      addToCart({
+        ...product,
+        size: selectedSize,
+        userId: user._id,
+      })
+    );
+
+    showToast({
+      message: "Product added to cart!",
+      description: `${productName} has been added to your cart.`,
+      type: "success",
+    });
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Images Section */}
+        {/* Images */}
         <div className="flex flex-col lg:flex-row gap-4 w-full">
-          {/* Thumbnails - Bottom on small, left on lg */}
           <div className="order-2 lg:order-1 flex lg:flex-col gap-3 justify-center lg:justify-start">
-            {image.slice(0, 5).map((src, idx) => (
+            {images.slice(0, 5).map((src, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedImage(idx)}
@@ -76,12 +112,10 @@ const ProductDetails = () => {
               </button>
             ))}
           </div>
-
-          {/* Main Image */}
           <div className="order-1 lg:order-2 flex-1 w-full">
             <img
-              src={image[selectedImage]}
-              alt={name}
+              src={images[selectedImage]}
+              alt={productName}
               className="w-full h-auto max-h-[500px] object-contain rounded-lg"
             />
           </div>
@@ -89,7 +123,9 @@ const ProductDetails = () => {
 
         {/* Product Info */}
         <div className="space-y-6">
-          <h1 className="text-4xl font-semibold text-gray-900">{name}</h1>
+          <h1 className="text-4xl font-semibold text-gray-900">
+            {productName}
+          </h1>
 
           <div className="flex items-center gap-2">
             {[...Array(Math.round(rating))].map((_, i) => (
@@ -109,7 +145,7 @@ const ProductDetails = () => {
             )}
           </div>
 
-          <p className="text-lg text-gray-700">{description}</p>
+          <p className="text-lg text-gray-700">{productDescription}</p>
 
           {sizes.length > 0 && (
             <div className="space-y-2">
@@ -117,19 +153,23 @@ const ProductDetails = () => {
                 Select Size
               </div>
               <div className="flex gap-3">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 border rounded-sm text-sm font-semibold ${
-                      selectedSize === size
-                        ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-white text-gray-800 border-gray-300"
-                    } focus:outline-none`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {sizes.map((sizeId) => {
+                  const size = sizeOptions.find((s) => s._id === sizeId);
+                  const label = size?.label || size?.name || sizeId;
+                  return (
+                    <button
+                      key={sizeId}
+                      onClick={() => setSelectedSize(sizeId)}
+                      className={`w-12 h-12 border rounded-sm text-sm font-semibold ${
+                        selectedSize === sizeId
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "bg-white text-gray-800 border-gray-300"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -171,13 +211,11 @@ const ProductDetails = () => {
         </div>
         <div className="mt-4 text-base text-gray-700 leading-relaxed">
           {activeTab === "description" ? (
-            <div>
-              <p>
-                Our e-commerce platform is a dynamic and user-friendly online
-                marketplace designed to streamline the buying and selling of
-                products across a wide range of categories...
-              </p>
-            </div>
+            <p>
+              Our e-commerce platform is a dynamic and user-friendly online
+              marketplace designed to streamline the buying and selling of
+              products across a wide range of categories...
+            </p>
           ) : reviews.length ? (
             reviews.map((r, i) => (
               <div key={i} className="mb-4">

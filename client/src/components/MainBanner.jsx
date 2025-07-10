@@ -3,8 +3,11 @@ import { Card, CardContent } from "./ui/card";
 import { assets } from "@/assets/frontend_assets/assets";
 import { Button } from "./ui/button";
 import { TypewriterText } from "@/components/TypeWritter";
+import { RouteCollection } from "@/helpers/routesName";
+import { useNavigate } from "react-router-dom";
 
 const MainBanner = () => {
+  const navigate = useNavigate()
   const year = new Date().getFullYear();
   const headlines = [
     "Unleash Your Signature Look",
@@ -76,7 +79,7 @@ const MainBanner = () => {
             style={{ fontFamily: '"Playfair Display", serif' }}
             className="mt-4 "
           >
-            <Button className="bg-white cursor-pointer text-black hover:bg-violet-600 hover:text-white transition-colors duration-300 py-3  px-10  text-xl md:text-2xl lg:text-3xl md:h-14 h-12 lg:h-16  tracking-wide rounded-full shadow-lg">
+            <Button onClick={()=> navigate(RouteCollection)} className="bg-white cursor-pointer text-black hover:bg-violet-600 hover:text-white transition-colors duration-300 py-3  px-10  text-xl md:text-2xl lg:text-3xl md:h-14 h-12 lg:h-16  tracking-wide rounded-full shadow-lg">
               Explore Deals !
             </Button>
           </div>

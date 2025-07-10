@@ -11,11 +11,15 @@ import {
   RouteSignIn,
   RouteCart,
   RouteBecomeSeller,
+  RouteUserProfile,
+  RouteSellerDashboard,
+  RouteUserOrders,
 } from "@/helpers/routesName";
 import { useSearch } from "@/context/SearchContext";
 import appUtils from "@/lib/appUtils";
 import ProfilePicture from "./Avatar";
-import { logout } from "@/store/slices/authSlice";
+import { showToast } from "./shared/showToast";
+import { logoutThunk } from "@/store/thunks/authThunk";
 
 const Navbar = () => {
   const { setSearchQuery, showSearchBar, setShowSearchBar } = useSearch();
@@ -23,11 +27,15 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);
   const { navigate, location, selector, dispatch } = appUtils();
   const cart = selector((state) => state.cart.cartItems);
-  const {user} = selector((state) => state.auth);
+  const { user, role } = selector((state) => state.auth);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (open && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+      if (
+        open &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      ) {
         setOpen(false);
       }
     };
@@ -53,15 +61,29 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      dispatch(logout());
-      navigate(RouteSignIn);
+      const result = await dispatch(logoutThunk());
+      if (logoutThunk.fulfilled.match(result)) {
+        navigate(RouteSignIn);
+        showToast({
+          message: "User Logout Successfully",
+          type: "success",
+        });
+      } else {
+        showToast({
+          message: result.payload || "User logout failed",
+          type: "error",
+        });
+      }
     } catch (error) {
-  console.error("Error logging out:", error);
+      console.error("Error logging out:", error);
+      showToast({
+        message: "Something went wrong",
+        type: "error",
+      });
     }
-  }
-  
+  };
 
   return (
     <div className="bg-gray-50 w-full">
@@ -91,11 +113,15 @@ const Navbar = () => {
             </NavLink>
           ))}
 
-          <NavLink to={RouteBecomeSeller}>
-            <Button className="text-white bg-violet-600 hover:bg-black">Become a Seller</Button>
-          </NavLink>
+          {role !== "seller" && (
+            <NavLink to={RouteBecomeSeller}>
+              <Button className="text-white bg-violet-600 hover:bg-black cursor-pointer">
+                Become a Seller
+              </Button>
+            </NavLink>
+          )}
 
-          <button onClick={handleSearchClick} aria-label="Search">
+          <button className="cursor-pointer" onClick={handleSearchClick} aria-label="Search">
             <Search className="text-white" />
           </button>
 
@@ -109,11 +135,38 @@ const Navbar = () => {
           </NavLink>
 
           {user ? (
-            <div className="relative group ">
-              <ProfilePicture src={""} alt="User" size="sm" className="ml-2" user={user} />
-              <div className="absolute right-0 mt-2 w-40 bg-white shadow-md  hidden group-hover:block z-50 ">
-                <NavLink to="/profile" className="block px-4 py-2 text-sm hover:bg-gray-100">Your Profile</NavLink>
-                <Button onClick={handleLogout} className="w-full rounded-none" variant="ghost">Logout</Button>
+            <div className="relative group">
+              <ProfilePicture
+                src={user.profilePicture}
+                alt="User"
+                size="sm"
+                className="ml-2 cursor-pointer"
+                user={user}
+              />
+              <div className="absolute right-0 mt-1 w-40 bg-white shadow-md hidden group-hover:block z-50 p-1">
+                <NavLink
+                  to={
+                    role === "seller" ? RouteSellerDashboard : RouteUserProfile
+                  }
+                  className="block px-4 py-2 text-sm hover:bg-gray-100"
+                >
+                  {role === "seller" ? "Dashboard" : "Profile"}
+                </NavLink>
+                {role !== "seller" && (
+                  <NavLink
+                    to={RouteUserOrders}
+                    className="block px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    View Orders
+                  </NavLink>
+                )}
+                <Button
+                  onClick={handleLogout}
+                  className="w-full rounded-none"
+                  variant="ghost"
+                >
+                  Logout
+                </Button>
               </div>
             </div>
           ) : (
@@ -126,7 +179,11 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button onClick={() => setOpen(!open)} className="sm:hidden" aria-label="Menu">
+        <button
+          onClick={() => setOpen(!open)}
+          className="sm:hidden"
+          aria-label="Menu"
+        >
           <Menu className="text-white" />
         </button>
 
@@ -137,23 +194,27 @@ const Navbar = () => {
             open ? "flex" : "hidden"
           } sm:hidden absolute top-[60px] left-0 w-full flex-col bg-violet-500 text-white px-6 py-4 z-50`}
         >
-          {[RouteIndex, RouteCollection, RouteAbout, RouteContact].map((to, i) => (
+          {[RouteIndex, RouteCollection, RouteAbout, RouteContact].map(
+            (to, i) => (
+              <NavLink
+                key={i}
+                to={to}
+                onClick={() => setOpen(false)}
+                className="py-2 text-lg border-b border-violet-400"
+              >
+                {to.replace("/", "") || "Home"}
+              </NavLink>
+            )
+          )}
+          {role !== "seller" && (
             <NavLink
-              key={i}
-              to={to}
+              to={RouteBecomeSeller}
               onClick={() => setOpen(false)}
               className="py-2 text-lg border-b border-violet-400"
             >
-              {to.replace("/","") || "Home"}
+              Become a Seller
             </NavLink>
-          ))}
-          <NavLink
-            to={RouteBecomeSeller}
-            onClick={() => setOpen(false)}
-            className="py-2 text-lg border-b border-violet-400"
-          >
-            Become a Seller
-          </NavLink>
+          )}
           <NavLink
             to={RouteCart}
             onClick={() => setOpen(false)}
@@ -164,8 +225,19 @@ const Navbar = () => {
           </NavLink>
           {user ? (
             <>
-              <NavLink to="/profile" className="py-2 text-lg">Your Profile</NavLink>
-              <Button onClick={handleLogout} variant="ghost" className="text-left w-full">Logout</Button>
+              <NavLink
+                to={role === "seller" ? RouteSellerDashboard : RouteUserProfile}
+                className="block px-4 py-2 text-sm hover:bg-gray-100"
+              >
+                {role === "seller" ? "Dashboard" : "Profile"}
+              </NavLink>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="text-left w-full"
+              >
+                Logout
+              </Button>
             </>
           ) : (
             <NavLink to={RouteSignIn} className="py-2 text-lg">

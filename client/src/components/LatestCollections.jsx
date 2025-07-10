@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ProductCard from "./ProductCard";
-import { products } from "@/assets/frontend_assets/assets";
+import appUtils from "@/lib/appUtils";
+import { getAllProductsThunk } from "@/store/thunks/productThunk";
 
 const LatestCollections = () => {
+     const { selector, dispatch } = appUtils();
+    const { products, loading, error } = selector((state) => state.products);
+     useEffect(() => {
+        dispatch(getAllProductsThunk());
+      }, [dispatch]);
   return (
     <div className="mt-14 px-4 sm:px-6 lg:px-8">
       <div className="mb-10 text-center space-y-4">
