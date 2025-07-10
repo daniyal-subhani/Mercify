@@ -19,10 +19,21 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: process.env.FRONTEND_BASE_URL || "http://localhost:5173",
-    credentials: true
+const allowedOrigins = [
+  "http://localhost:5173", // local dev
+  "https://mercify.vercel.app", // production
+  "https://mercify-git-main-daniyal-subhanis-projects.vercel.app", // preview builds
+];
 
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
 //  Routes
 app.get("/ping", (req, res) => {
