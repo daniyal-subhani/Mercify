@@ -4,6 +4,12 @@ Mercify is a production-grade, full-stack e-commerce application built entirely 
 
 ---
 
+
+## 🗣️ Important 
+- This project is still in development. The current version is a **proof-of-concept** and not yet ready for production use. 
+- Actually i upload frontend on vercel and backend on replit so thats why the server is not working sometimes. Replit server is not free so i can't keep it running all the time. Fetching data from Dataabase is not working properly. but i add screenshots of the project so you can see how it looks like. 
+- Or just message me on +92 342 6435289 and i'll start the server for you. 
+- I'll keep updating the project as i go along.
 ## 🔑 Roles & Features
 
 ### 👤 User
