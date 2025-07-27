@@ -20,10 +20,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 const allowedOrigins = [
-  "http://localhost:5173", // local dev
-  "https://mercify.vercel.app", // production
-  "https://mercify-git-main-daniyal-subhanis-projects.vercel.app", // preview builds
+  "http://localhost:5173",
+  "https://mercify.vercel.app",
   "https://www.mercify.com",
+  "https://mercify-git-main-daniyal-subhanis-projects.vercel.app",
 ];
 
 app.use(
