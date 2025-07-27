@@ -17,8 +17,6 @@ import sellerStats from "./routes/seller.dashboard.stats.route.js";
 dotenv.config();
 
 const app = express();
-app.use(express.json());
-app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://mercify.vercel.app",
@@ -38,6 +36,8 @@ app.use(
     credentials: true,
   })
 );
+app.use(express.json());
+app.use(cookieParser());
 //  Routes
 app.get("/ping", (req, res) => {
   res.status(200).json({ message: "pong" });
