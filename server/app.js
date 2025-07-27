@@ -23,18 +23,21 @@ const allowedOrigins = [
   "http://localhost:5173", // local dev
   "https://mercify.vercel.app", // production
   "https://mercify-git-main-daniyal-subhanis-projects.vercel.app", // preview builds
+  "https://www.mercify.com",
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 //  Routes
 app.get("/ping", (req, res) => {
   res.status(200).json({ message: "pong" });
@@ -46,12 +49,10 @@ app.use(ROUTES.SELLER.BASE, sellerRoutes);
 app.use(ROUTES.PRODUCT.BASE, productRoutes);
 app.use(ROUTES.ORDER.BASE, orderRoutes);
 app.use(ROUTES.PRODUCT_META_DATA.BASE, productMetaDataRoutes);
-app.use(ROUTES.PUBLIC_PROFILES.BASE, publicRoutes)
-app.use(ROUTES.ALL_USERS.BASE, getAllUsers)
-app.use(ROUTES.SELLER.BASE, becomeSellerRoute)
-app.use(ROUTES.PROFILES.BASE, profilesRoutes)
-app.use(ROUTES.DASHBOARD_DATA.BASE, sellerStats)
+app.use(ROUTES.PUBLIC_PROFILES.BASE, publicRoutes);
+app.use(ROUTES.ALL_USERS.BASE, getAllUsers);
+app.use(ROUTES.SELLER.BASE, becomeSellerRoute);
+app.use(ROUTES.PROFILES.BASE, profilesRoutes);
+app.use(ROUTES.DASHBOARD_DATA.BASE, sellerStats);
 
-
-
-export  default app;
+export default app;
