@@ -14,7 +14,7 @@ const HomePage = () => {
 
       {/* Main content */}
       <MainBanner />
-      <h2 className="mx-auto text-center">WEBSITE UNDER MAINTENANCE...!</h2>
+       <h2 className="mx-auto text-center bg-amber-400 text-3xl font-bold">WEBSITE UNDER MAINTENANCE...!</h2>
       <Separator />
       <section>
         <LatestCollections />
