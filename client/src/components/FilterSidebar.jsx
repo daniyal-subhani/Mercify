@@ -2,11 +2,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useSelector } from "react-redux";
 
 const FilterSidebar = ({ filters, onFilterChange }) => {
-  const productsState = useSelector((state) => state.products);
-  const products = productsState?.products || [];
 
-  const categories = [...new Set(products.map((product) => product.category))];
-  const subCategories = [...new Set(products.map((product) => product.subCategory))];
+  const {categories, subCategories} = useSelector((state) => state.productMetaData);
+  const uniqueCategories = [...new Set(categories.map(c => c?.name).filter(Boolean))];
+
+  const uniqueSubCategories = [...new Set(subCategories.map(sc => sc?.name).filter(Boolean))];
 
   const handleChange = (section, value) => {
     onFilterChange(section, value);
@@ -32,8 +32,8 @@ const FilterSidebar = ({ filters, onFilterChange }) => {
 
   return (
     <div className="p-4 border rounded-lg bg-white shadow w-[90%] md:w-[250px]">
-      {renderOptions("Category", "category", categories)}
-      {renderOptions("Type", "subCategory", subCategories)}
+      {renderOptions("Category", "category", uniqueCategories)}
+      {renderOptions("Type", "subCategory", uniqueSubCategories)}
     </div>
   );
 };
